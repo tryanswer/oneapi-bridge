@@ -81,7 +81,7 @@ func main() {
 	http.HandleFunc("/v1/models", handleModels)
 	http.HandleFunc("/v1/audio/speech", handleSpeech)
 
-	log.Printf("[openclaw-cosyvoice-bridge] listening on %s", *addr)
+	log.Printf("[oneapi-bridge] listening on %s", *addr)
 	if err := http.ListenAndServe(*addr, nil); err != nil {
 		log.Fatal(err)
 	}
