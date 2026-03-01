@@ -33,17 +33,18 @@ type wsHeader struct {
 	Action       string `json:"action"`
 	TaskID       string `json:"task_id"`
 	Streaming    string `json:"streaming"`
-	TaskGroup    string `json:"task_group"`
-	Function     string `json:"function"`
-	Model        string `json:"model"`
 	Event        string `json:"event,omitempty"`
 	ErrorMessage string `json:"error_message,omitempty"`
 	RequestID    string `json:"request_id,omitempty"`
 }
 
 type wsPayload struct {
-	Input      map[string]any `json:"input,omitempty"`
+	Input      map[string]any `json:"input"`
 	Parameters map[string]any `json:"parameters,omitempty"`
+	TaskGroup  string         `json:"task_group,omitempty"`
+	Task       string         `json:"task,omitempty"`
+	Function   string         `json:"function,omitempty"`
+	Model      string         `json:"model,omitempty"`
 }
 
 type wsEnvelope struct {
@@ -141,11 +142,10 @@ func handleSpeech(w http.ResponseWriter, r *http.Request) {
 	if voice == "" {
 		voice = "longanyang"
 	}
-	format := strings.ToLower(strings.TrimSpace(req.ResponseFormat))
-	if format == "" {
-		format = "mp3"
-	}
+	voice = mapVoice(voice)
+	format := normalizeResponseFormat(req.ResponseFormat)
 	if format != "mp3" && format != "wav" {
+		log.Printf("[tts] unsupported response_format=%s", req.ResponseFormat)
 		http.Error(w, "unsupported response_format (supported: mp3, wav)", http.StatusBadRequest)
 		return
 	}
@@ -181,10 +181,11 @@ func handleSpeech(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	log.Printf("[tts] model=%s voice=%s format=%s sample_rate=%d rate=%.2f pitch=%.2f", model, voice, format, sampleRate, rate, pitch)
+	log.Printf("[tts] model=%s voice=%s format=%s sample_rate=%d rate=%.2f pitch=%.2f response_format=%s", model, voice, format, sampleRate, rate, pitch, strings.TrimSpace(req.ResponseFormat))
 
 	audio, err := callCosyVoice(wsURL, apiKey, model, voice, format, sampleRate, volume, rate, pitch, req.Input, deadline)
 	if err != nil {
+		log.Printf("[tts] cosyvoice error: %v", err)
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
 	}
@@ -311,6 +312,36 @@ func getIntPtr(m map[string]any, keys ...string) (*int, bool) {
 	return nil, false
 }
 
+func normalizeResponseFormat(input string) string {
+	format := strings.ToLower(strings.TrimSpace(input))
+	if format == "" {
+		return "mp3"
+	}
+	// Map common OpenAI formats to CosyVoice supported formats
+	switch format {
+	case "opus", "ogg", "ogg_opus":
+		return "mp3"
+	case "pcm", "wav":
+		return "wav"
+	case "mp3":
+		return "mp3"
+	}
+	return format
+}
+
+func mapVoice(voice string) string {
+	voice = strings.TrimSpace(strings.ToLower(voice))
+	if voice == "" {
+		return "longanyang"
+	}
+	// Map OpenAI-style voices to a default CosyVoice voice
+	switch voice {
+	case "alloy", "echo", "fable", "onyx", "nova", "shimmer":
+		return "longanyang"
+	}
+	return voice
+}
+
 func callCosyVoice(wsURL, apiKey, model, voice, format string, sampleRate, volume int, rate, pitch float64, text string, deadline time.Duration) ([]byte, error) {
 	header := http.Header{}
 	header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
@@ -330,16 +361,15 @@ func callCosyVoice(wsURL, apiKey, model, voice, format string, sampleRate, volum
 			Action:    "run-task",
 			TaskID:    taskID,
 			Streaming: "duplex",
-			TaskGroup: "audio",
-			Function:  "speech_synthesizer",
-			Model:     model,
 		},
 		Payload: wsPayload{
-			Input: map[string]any{
-				"text":      "",
-				"text_type": "PlainText",
-			},
+			TaskGroup: "audio",
+			Task:      "tts",
+			Function:  "SpeechSynthesizer",
+			Model:     model,
+			Input:     map[string]any{},
 			Parameters: map[string]any{
+				"text_type":   "PlainText",
 				"voice":       voice,
 				"format":      format,
 				"sample_rate": sampleRate,
@@ -385,7 +415,10 @@ func callCosyVoice(wsURL, apiKey, model, voice, format string, sampleRate, volum
 					if err := conn.WriteJSON(cont); err != nil {
 						return nil, fmt.Errorf("send continue-task failed: %w", err)
 					}
-					finish := wsEnvelope{Header: wsHeader{Action: "finish-task", TaskID: taskID, Streaming: "duplex"}}
+					finish := wsEnvelope{
+						Header:  wsHeader{Action: "finish-task", TaskID: taskID, Streaming: "duplex"},
+						Payload: wsPayload{Input: map[string]any{}},
+					}
 					if err := conn.WriteJSON(finish); err != nil {
 						return nil, fmt.Errorf("send finish-task failed: %w", err)
 					}
