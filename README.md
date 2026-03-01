@@ -1,4 +1,4 @@
-# openclaw_bridge
+# oneapi_bridge
 
 A tiny HTTP bridge that exposes `/v1/audio/speech` (OpenAI-compatible TTS) and calls Aliyun DashScope CosyVoice over WebSocket.
 

@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-BIN="$ROOT_DIR/openclaw_bridge"
+BIN="$ROOT_DIR/oneapi_bridge"
 PORT="${PORT:-8090}"
-SERVICE_NAME="openclaw_bridge"
+SERVICE_NAME="oneapi_bridge"
 
 if [ ! -x "$BIN" ]; then
   echo "binary not found: $BIN"

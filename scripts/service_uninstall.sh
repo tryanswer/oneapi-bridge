@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SERVICE_NAME="openclaw_bridge"
+SERVICE_NAME="oneapi_bridge"
 
 if command -v systemctl >/dev/null 2>&1; then
   sudo systemctl disable --now "$SERVICE_NAME" || true

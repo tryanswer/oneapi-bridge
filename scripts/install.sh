@@ -13,6 +13,6 @@ fi
 mkdir -p "$ROOT_DIR/logs" "$ROOT_DIR/run"
 
 go mod tidy
-go build -o openclaw_bridge .
+go build -o oneapi_bridge .
 
-echo "built: $ROOT_DIR/openclaw_bridge"
+echo "built: $ROOT_DIR/oneapi_bridge"

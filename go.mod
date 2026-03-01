@@ -1,4 +1,4 @@
-module openclaw_bridge
+module oneapi_bridge
 
 go 1.22
 

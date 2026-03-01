@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-PID_FILE="$ROOT_DIR/run/openclaw_bridge.pid"
+PID_FILE="$ROOT_DIR/run/oneapi_bridge.pid"
 
 if [ ! -f "$PID_FILE" ]; then
   echo "not running (pid file missing)"

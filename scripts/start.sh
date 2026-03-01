@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-BIN="$ROOT_DIR/openclaw_bridge"
-PID_FILE="$ROOT_DIR/run/openclaw_bridge.pid"
+BIN="$ROOT_DIR/oneapi_bridge"
+PID_FILE="$ROOT_DIR/run/oneapi_bridge.pid"
 LOG_FILE="$ROOT_DIR/logs/server.log"
 PORT="${PORT:-8090}"
 ADDR=":$PORT"

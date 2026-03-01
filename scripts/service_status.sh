@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if command -v systemctl >/dev/null 2>&1; then
-  systemctl status --no-pager openclaw_bridge
+  systemctl status --no-pager oneapi_bridge
   exit 0
 fi
 

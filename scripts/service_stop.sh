@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if command -v systemctl >/dev/null 2>&1; then
-  sudo systemctl stop openclaw_bridge
+  sudo systemctl stop oneapi_bridge
   exit 0
 fi
 
