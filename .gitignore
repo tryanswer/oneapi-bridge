@@ -4,3 +4,6 @@
 *.log
 .DS_Store
 oneapi_bridge
+task.md
+api.md
+README.md

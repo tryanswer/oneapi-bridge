@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/openclaw_oneapi_bridge.iml" filepath="$PROJECT_DIR$/.idea/openclaw_oneapi_bridge.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/openclaw-oneapi-bridge.iml" filepath="$PROJECT_DIR$/.idea/openclaw-oneapi-bridge.iml" />
     </modules>
   </component>
 </project>
