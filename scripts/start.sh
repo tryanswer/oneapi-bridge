@@ -6,6 +6,8 @@ BIN="$ROOT_DIR/oneapi_bridge"
 PID_FILE="$ROOT_DIR/run/oneapi_bridge.pid"
 LOG_FILE="$ROOT_DIR/logs/server.log"
 PORT="${PORT:-8090}"
+SERVICE_NAME="${SERVICE_NAME:-oneapi_bridge}"
+LAUNCHD_NAME="com.openclaw.cosyvoice.bridge"
 
 if [[ "$PORT" == :* ]]; then
   ADDR="$PORT"
@@ -20,6 +22,18 @@ if [ ! -x "$BIN" ]; then
 fi
 
 mkdir -p "$ROOT_DIR/logs" "$ROOT_DIR/run"
+
+if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files | grep -q "^${SERVICE_NAME}\.service"; then
+  sudo systemctl start "${SERVICE_NAME}"
+  sudo systemctl --no-pager --full status "${SERVICE_NAME}"
+  exit 0
+fi
+
+if command -v launchctl >/dev/null 2>&1 && [ -f "$HOME/Library/LaunchAgents/${LAUNCHD_NAME}.plist" ]; then
+  launchctl start "${LAUNCHD_NAME}"
+  launchctl list | grep -F "${LAUNCHD_NAME}" || true
+  exit 0
+fi
 
 if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
   echo "already running (pid $(cat "$PID_FILE"))"

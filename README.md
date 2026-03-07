@@ -37,15 +37,10 @@ Then call OneAPI `/v1/audio/speech` with `model=cosyvoice-v3-flash`.
 
 Scripts
 - scripts/install.sh: install deps and build
-- scripts/start.sh: start in background (PORT env supported, default 8090)
-- scripts/stop.sh: stop background process
-- scripts/status.sh: process status
+- scripts/start.sh: start service if installed, otherwise run in background (PORT env supported, default 8090)
+- scripts/stop.sh: stop service if installed, otherwise stop background process
+- scripts/status.sh: show service status if installed, otherwise process status
 - scripts/health.sh: health check (/healthz)
-- scripts/service_install.sh: install system service (systemd or launchd)
-- scripts/service_uninstall.sh: remove service
-- scripts/service_start.sh: start service
-- scripts/service_stop.sh: stop service
-- scripts/service_status.sh: service status
 
 Parameter mapping
 - model: model

@@ -58,10 +58,9 @@ cd "${REMOTE_ROOT}"
 
 if command -v systemctl >/dev/null 2>&1; then
   if ! systemctl list-unit-files | grep -q "^${SERVICE_NAME}\.service"; then
-    "${REMOTE_ROOT}/scripts/install_service.sh"
+    "${REMOTE_ROOT}/scripts/install.sh"
   fi
-  systemctl restart "${SERVICE_NAME}"
-  systemctl --no-pager --full status "${SERVICE_NAME}"
+  "${REMOTE_ROOT}/scripts/start.sh"
 else
   "${REMOTE_ROOT}/scripts/stop.sh" || true
   "${REMOTE_ROOT}/scripts/start.sh"

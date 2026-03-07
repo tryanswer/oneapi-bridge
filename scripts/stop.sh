@@ -3,6 +3,20 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 PID_FILE="$ROOT_DIR/run/oneapi_bridge.pid"
+SERVICE_NAME="${SERVICE_NAME:-oneapi_bridge}"
+LAUNCHD_NAME="com.openclaw.cosyvoice.bridge"
+
+if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files | grep -q "^${SERVICE_NAME}\.service"; then
+  sudo systemctl stop "${SERVICE_NAME}"
+  echo "stopped systemd service: ${SERVICE_NAME}"
+  exit 0
+fi
+
+if command -v launchctl >/dev/null 2>&1 && [ -f "$HOME/Library/LaunchAgents/${LAUNCHD_NAME}.plist" ]; then
+  launchctl stop "${LAUNCHD_NAME}" || true
+  echo "stopped launchd service: ${LAUNCHD_NAME}"
+  exit 0
+fi
 
 if [ ! -f "$PID_FILE" ]; then
   echo "not running (pid file missing)"
