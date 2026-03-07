@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-PID_FILE="$ROOT_DIR/run/oneapi_bridge.pid"
-SERVICE_NAME="${SERVICE_NAME:-oneapi_bridge}"
-LAUNCHD_NAME="com.openclaw.cosyvoice.bridge"
+. "$(cd "$(dirname "$0")" && pwd)/common.sh"
 
-if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files | grep -q "^${SERVICE_NAME}\.service"; then
+if has_systemd_service; then
   sudo systemctl stop "${SERVICE_NAME}"
   echo "stopped systemd service: ${SERVICE_NAME}"
   exit 0
 fi
 
-if command -v launchctl >/dev/null 2>&1 && [ -f "$HOME/Library/LaunchAgents/${LAUNCHD_NAME}.plist" ]; then
+if has_launchd_service; then
   launchctl stop "${LAUNCHD_NAME}" || true
   echo "stopped launchd service: ${LAUNCHD_NAME}"
   exit 0

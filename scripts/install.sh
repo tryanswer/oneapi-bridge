@@ -1,23 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-BIN="$ROOT_DIR/oneapi_bridge"
-PORT="${PORT:-8090}"
-SERVICE_NAME="${SERVICE_NAME:-oneapi_bridge}"
-LAUNCHD_NAME="com.openclaw.cosyvoice.bridge"
-
-get_env() {
-  local key="$1"
-  local val=""
-  if [ -f "$ROOT_DIR/.env" ]; then
-    val=$(grep -E "^${key}=" "$ROOT_DIR/.env" | tail -n1 | sed -E "s/^${key}=//")
-  fi
-  if [ -z "$val" ]; then
-    val="${!key:-}"
-  fi
-  echo "$val"
-}
+. "$(cd "$(dirname "$0")" && pwd)/common.sh"
 
 install_systemd_service() {
   local service_file="/etc/systemd/system/${SERVICE_NAME}.service"
@@ -54,9 +38,9 @@ install_launchd_service() {
     env_entries="$env_entries\n    <key>${key}</key>\n    <string>${val}</string>"
   }
 
-  add_env "DASHSCOPE_API_KEY" "$(get_env DASHSCOPE_API_KEY)"
-  add_env "DASHSCOPE_WS_URL" "$(get_env DASHSCOPE_WS_URL)"
-  add_env "DASHSCOPE_TIMEOUT" "$(get_env DASHSCOPE_TIMEOUT)"
+  add_env "DASHSCOPE_API_KEY" "$(get_env_value DASHSCOPE_API_KEY)"
+  add_env "DASHSCOPE_WS_URL" "$(get_env_value DASHSCOPE_WS_URL)"
+  add_env "DASHSCOPE_TIMEOUT" "$(get_env_value DASHSCOPE_TIMEOUT)"
 
   mkdir -p "$ROOT_DIR/logs" "$HOME/Library/LaunchAgents"
 
@@ -94,14 +78,8 @@ PLIST_EOF
 }
 
 cd "$ROOT_DIR"
-
-if [ -f "$ROOT_DIR/.env" ]; then
-  set -a
-  . "$ROOT_DIR/.env"
-  set +a
-fi
-
-mkdir -p "$ROOT_DIR/logs" "$ROOT_DIR/run"
+load_env
+ensure_runtime_dirs
 
 go mod tidy
 go build -o oneapi_bridge .
